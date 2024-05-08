@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 705507994}
-  m_IndirectSpecularColor: {r: 0.4465781, g: 0.49641246, b: 0.5748148, a: 1}
+  m_IndirectSpecularColor: {r: 0.44657874, g: 0.4964131, b: 0.57481605, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -246,7 +246,7 @@ GameObject:
   - component: {fileID: 248558794}
   m_Layer: 0
   m_Name: PawnPlayer
-  m_TagString: Pawn
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -333,7 +333,7 @@ Transform:
   m_GameObject: {fileID: 248558786}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.5, z: 0}
+  m_LocalPosition: {x: 3.21, y: 0.5, z: -10.15}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1698,7 +1698,7 @@ Transform:
   m_GameObject: {fileID: 1397832499}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.5, z: 8}
+  m_LocalPosition: {x: 0, y: 0.5, z: 9.92}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1744,13 +1744,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4645c6406d5f9485e82ed760afc8791d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  currentState: 1
   waypoints:
   - {fileID: 1905686667}
   - {fileID: 1998345970}
   - {fileID: 579066887}
   - {fileID: 1788185324}
   baseArea: {fileID: 0}
+  detectionRadius: 10
 --- !u!1 &1615253835
 GameObject:
   m_ObjectHideFlags: 0

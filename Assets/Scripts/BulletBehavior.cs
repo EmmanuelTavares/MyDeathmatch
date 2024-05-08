@@ -19,7 +19,7 @@ public class BulletBehavior : MonoBehaviour
 
     void OnCollisionEnter(Collision collision)
     {
-        if (collision.gameObject.tag == "Pawn")     // Checa se acertou um pawn
+        if (collision.gameObject.tag == "Pawn" || collision.gameObject.tag == "Player")     // Checa se acertou um pawn ou player
         {
             float randNumber = Random.Range(-2, 3);
             collision.gameObject.GetComponent<IDamageable>().TakeDamage(damage + randNumber);     // Aplica dano se o objeto implementar a interface

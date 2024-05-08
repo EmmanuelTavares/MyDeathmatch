@@ -7,23 +7,23 @@ public class PawnBehavior : MonoBehaviour, IDamageable
 {
     public GameObject bulletPrefab;
     public Transform spawnBullet;
-    public float health = 100f;
-    public int ammo = 30;
+    public float currentHealth = 100f;
+    public int currentAmmo = 30;
 
     public void Shoot()
     {
-        if (ammo > 0)
+        if (currentAmmo > 0)
         {
-            GameObject _bullet = Instantiate(bulletPrefab, spawnBullet.position, spawnBullet.rotation);     // Instancia a bala
-            ammo--;
+            Instantiate(bulletPrefab, spawnBullet.position, spawnBullet.rotation);     // Instancia a bala
+            currentAmmo--;
         }
     }
 
-    public void TakeDamage(float _damage)   // IDamageable
+    public void TakeDamage(float damage)   // IDamageable
     {
-        Debug.Log($"Levou {_damage} de dano");
-        health -= _damage;        
-        if (health <= 0) { OnDeath(); }
+        Debug.Log($"Levou {damage} de dano");
+        currentHealth -= damage;        
+        if (currentHealth <= 0) { OnDeath(); }
     }
 
     private void OnDeath()
@@ -32,15 +32,15 @@ public class PawnBehavior : MonoBehaviour, IDamageable
         Destroy(this.gameObject);
     }
 
-    public void Heal(float _health)     // IDamageable
+    public void Heal(float health)     // IDamageable
     {
-        Debug.Log($"Recebeu {_health} de vida");
-        health += _health;
+        Debug.Log($"Recebeu {health} de vida");
+        health += health;
     }
 
-    public void AddAmmo(int _ammo)      // IDamageable
+    public void AddAmmo(int ammo)      // IDamageable
     {
-        Debug.Log($"Adicionou {_ammo} de municao");
-        ammo += _ammo;
+        Debug.Log($"Adicionou {ammo} de municao");
+        currentAmmo += ammo;
     }
 }

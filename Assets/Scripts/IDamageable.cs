@@ -5,9 +5,9 @@ using UnityEngine;
 public interface IDamageable
 {
 
-    void TakeDamage(float _damage) { }
+    void TakeDamage(float damage) { }
 
-    void Heal(float _health) { }
+    void Heal(float health) { }
 
-    void AddAmmo(int _ammo) { }
+    void AddAmmo(int ammo) { }
 }
