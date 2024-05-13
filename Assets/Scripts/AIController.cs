@@ -141,8 +141,22 @@ public class AIController : MonoBehaviour
 
     private bool IsPlayerSeen(float detectionRange)
     {
-        // Retorna verdade se a distancia entre esta ia e o jogador for menor que a area de deteccao
-        if (Vector3.Distance(player.position, this.transform.position) < detectionRange) {  return true; } 
+        if (Vector3.Distance(player.position, this.transform.position) < detectionRange)    // Checa se jogador esta dentro da area de deteccao
+        {
+            RaycastHit hit;
+            Vector3 playerDirection = (player.position - this.transform.position).normalized;
+
+            // Cria uma linha da ia para o jogador, se bater em algo antes, nao viu o jogador
+            if (Physics.Raycast(this.transform.position, playerDirection, out hit, detectionRange))
+            {            
+                if (hit.transform == player) 
+                {
+                    Debug.Log("Viu jogador");
+                    return true; 
+                }
+                else { Debug.Log(hit.collider.gameObject.name); }
+            }
+        }
         return false;
     }
 }
