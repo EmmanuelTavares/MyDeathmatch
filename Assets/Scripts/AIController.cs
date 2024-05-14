@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
+using static UnityEngine.GraphicsBuffer;
 
 
 public class AIController : MonoBehaviour
@@ -46,7 +47,7 @@ public class AIController : MonoBehaviour
                 break;
             case EState.Shooting:
                 Debug.Log("Atirando");
-                OnShooting();
+                StartCoroutine(OnShooting());
                 break;
             case EState.Chasing:
                 Debug.Log("Perseguindo");
@@ -89,7 +90,7 @@ public class AIController : MonoBehaviour
                 {
                     if (IsPlayerSeen(10f))      // Checa se viu o jogador a cada 0.1 segundo
                     {
-                        UpdateState(EState.Chasing);    // Passa para estado de perseguindo se viu jogador
+                        UpdateState(EState.Chasing);    // Passa para estado de perseguindo
                         break;
                     }
                     yield return new WaitForSeconds(.1f);
@@ -111,16 +112,33 @@ public class AIController : MonoBehaviour
     {
         agent.SetDestination(player.position);      // Defini posicao do jogador como destino
 
-        while (!InDestination())    // Fica definindo a posicao do jogador como destino a cada 0.1 segundo
+        while (!InDestination() && currentState == EState.Chasing)    // Fica definindo a posicao do jogador como destino a cada 0.1 segundo
         {
-            agent.SetDestination(player.position);      
+            agent.SetDestination(player.position);
+
+            if (IsPlayerSeen(5f))    // Checa se jogador esta proximo a cada 0.1 segundo
+            {
+                UpdateState(EState.Shooting);       // Passa para estado de atirando
+                break;
+            }
+
+            if (currentState != EState.Chasing) { break; }      // Quebra o loop se ja nao mais tiver perseguindo
+              
             yield return new WaitForSeconds(.1f);
         } 
     }
 
-    private void OnShooting()
-    {
-        // IMPLEMENTE AQUI O METODO DE ATIRAR
+    private IEnumerator OnShooting()
+    {   
+        // Para, mira no jogador e atira
+        agent.SetDestination(this.transform.position);
+        this.transform.rotation = Quaternion.LookRotation(player.position - this.transform.position);
+        GetComponent<PawnBehavior>().Shoot();
+        Debug.Log("Atirou");
+
+        // Troca para cacando depois de 1 segundo
+        yield return new WaitForSeconds(1f);
+        UpdateState(EState.Chasing);
     }
 
     private void OnRunningAway()
