@@ -14,7 +14,7 @@ public class PawnBehavior : MonoBehaviour, IDamageable
     {
         if (currentAmmo > 0)
         {
-            Instantiate(bulletPrefab, spawnBullet.position, spawnBullet.rotation);     // Instancia a bala
+            Instantiate(bulletPrefab, spawnBullet.position, spawnBullet.rotation);
             currentAmmo--;
         }
     }
@@ -35,7 +35,7 @@ public class PawnBehavior : MonoBehaviour, IDamageable
     public void Heal(float health)     // IDamageable
     {
         Debug.Log($"Recebeu {health} de vida");
-        health += health;
+        currentHealth += health;
     }
 
     public void AddAmmo(int ammo)      // IDamageable

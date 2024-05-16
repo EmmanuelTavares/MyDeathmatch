@@ -7,12 +7,12 @@ public class AmmoBoxBehavior : MonoBehaviour
     public int ammoToAdd = 15;
 
     void OnTriggerEnter(Collider other)
-    {
-        Debug.Log("Colidiu");
-        if (other.gameObject.tag == "Pawn")     // Checa se acertou um pawn
+    {       
+        if (other.gameObject.tag == "Player")
         {
-            int randNumber = Random.Range(-5, 6);
-            other.gameObject.GetComponent<IDamageable>().AddAmmo(ammoToAdd + randNumber);     // Adiciona municao se o objeto implementar a interface
+            int randNumber = Random.Range(-3, 4);
+            other.gameObject.GetComponent<IDamageable>().AddAmmo(ammoToAdd + randNumber);
+            Debug.Log("Jogador pegou municao");
             Destroy(this.gameObject);
         }
     }

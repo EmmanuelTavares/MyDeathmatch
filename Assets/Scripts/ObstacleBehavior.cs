@@ -10,28 +10,21 @@ public class ObstacleBehavior : MonoBehaviour
 
     private void Start()
     {
-        lastPosition = this.transform.position;     // Salva primeira posicao como a ultima
+        // Salva a ultima posicao
+        lastPosition = this.transform.position; 
     }
 
     private void FixedUpdate()
     {
-        this.transform.Translate(direction * speed * Time.deltaTime);   // Move obstaculo
+        this.transform.Translate(direction * speed * Time.deltaTime);
 
-        if (lastPosition == this.transform.position)    // Checa se a ultima posicao e a mesma que a atual
+        // Muda de direcao se o obstaculo parou
+        if (lastPosition == this.transform.position)
         {
-            Debug.Log("Parou");
-            direction *= -1;    // Muda de direcao
+            //Debug.Log("Parou");
+            direction *= -1;
         }
 
-        lastPosition = this.transform.position;     // Salva a ultima posicao
-    }
-
-    void OnCollisionEnter(Collision collision)
-    {
-        if (collision.gameObject.tag == "Wall")     // Checa se colidiu com a parede
-        {
-            //Debug.Log("Colidiu");
-            direction *= -1;
-        }      
+        lastPosition = this.transform.position;
     }
 }

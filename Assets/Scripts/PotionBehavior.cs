@@ -8,11 +8,11 @@ public class PotionBehavior : MonoBehaviour
 
     void OnTriggerEnter(Collider other)
     {
-        Debug.Log("Colidiu");
-        if (other.gameObject.tag == "Pawn")     // Checa se acertou um pawn
+        if (other.gameObject.tag == "Player")
         {
-            int randNumber = Random.Range(-10, 11);
-            other.gameObject.GetComponent<IDamageable>().Heal(healthToAdd + randNumber);     // Adiciona vida se o objeto implementar a interface
+            int randNumber = Random.Range(-5, 6);
+            other.gameObject.GetComponent<IDamageable>().Heal(healthToAdd + randNumber);
+            Debug.Log("Jogador pegou a pocao");
             Destroy(this.gameObject);
         }       
     }

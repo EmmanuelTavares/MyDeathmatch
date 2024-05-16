@@ -9,20 +9,23 @@ public class BulletBehavior : MonoBehaviour
 
     private void Start()
     {
-        Destroy(this.gameObject, 5f);   // Destroi a bala depois de 5 segundos
+        // Destroi a bala depois de 5 segundos
+        Destroy(this.gameObject, 5f);
     }
 
     private void FixedUpdate()
     {
-        GetComponent<Rigidbody>().velocity = transform.forward * speed * Time.deltaTime;    // Lancamento da bala
+        // Lancamento da bala
+        GetComponent<Rigidbody>().velocity = transform.forward * speed * Time.deltaTime;
     }
 
     void OnCollisionEnter(Collision collision)
     {
-        if (collision.gameObject.tag == "Pawn" || collision.gameObject.tag == "Player")     // Checa se acertou um pawn ou player
+        // Causa dano se acertou um inimigo ou o jogador
+        if (collision.gameObject.tag == "Enemy" || collision.gameObject.tag == "Player")
         {
             float randNumber = Random.Range(-2, 3);
-            collision.gameObject.GetComponent<IDamageable>().TakeDamage(damage + randNumber);     // Aplica dano se o objeto implementar a interface
+            collision.gameObject.GetComponent<IDamageable>().TakeDamage(damage + randNumber);
         }
 
         Destroy(this.gameObject);

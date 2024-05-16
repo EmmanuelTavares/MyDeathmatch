@@ -6,20 +6,21 @@ using static UnityEngine.GraphicsBuffer;
 
 public class AIController : MonoBehaviour
 {
-    public enum EState  // Criacao do enumarator
+    public enum EState
     {
         Idle,
         Patrolling,
         Chasing,
         Shooting,
         RunningAway,
-        Dead
     }
 
-    [SerializeField] private Transform[] waypoints;     // Pontos onde a ia vai se locomover
-    [SerializeField] private BoxCollider baseArea;      // Area da base (FALTA IMPLEMENTAR)
+    [SerializeField] private Transform[] waypoints;
+    [SerializeField] private Transform[] basePoints;
+
     private NavMeshAgent agent;
     private Transform player = null;
+    private PawnBehavior pawn;
     private EState currentState;
 
     private void Start()
@@ -27,6 +28,8 @@ public class AIController : MonoBehaviour
         agent = this.GetComponent<NavMeshAgent>();      // Salva a variavel nav mesh agent
 
         player = GameObject.FindGameObjectWithTag("Player").transform;      // Salva o transform do jogador
+
+        pawn = this.GetComponent<PawnBehavior>();
     
         UpdateState(EState.Patrolling);     // Comeca como patrulhando
     }
@@ -37,29 +40,25 @@ public class AIController : MonoBehaviour
 
         switch(currentState)   // Implementa metodos dependendo do estado atual
         {
-            case EState.Dead:
-                Debug.Log("Morrendo");
-                OnDead();
-                break;
-            case EState.RunningAway:
-                Debug.Log("Fugindo");
-                OnRunningAway();
-                break;
-            case EState.Shooting:
-                Debug.Log("Atirando");
-                StartCoroutine(OnShooting());
-                break;
-            case EState.Chasing:
-                Debug.Log("Perseguindo");
-                StartCoroutine(OnChasing());
+            case EState.Idle:
+                Debug.Log("Idle");
+                StartCoroutine(OnIdle());
                 break;
             case EState.Patrolling:
                 Debug.Log("Patrulhando");
                 StartCoroutine(OnPatrolling());
                 break;
-            case EState.Idle:
-                Debug.Log("Idle");
-                StartCoroutine(OnIdle());
+            case EState.Chasing:
+                Debug.Log("Perseguindo");
+                StartCoroutine(OnChasing());
+                break;
+            case EState.Shooting:
+                Debug.Log("Atirando");
+                StartCoroutine(OnShooting());
+                break;
+            case EState.RunningAway:
+                Debug.Log("Fugindo");
+                StartCoroutine(OnRunningAway());
                 break;
             default: Debug.Log("Sem estado definido!");
                 break;
@@ -67,12 +66,13 @@ public class AIController : MonoBehaviour
     }
 
     private IEnumerator OnIdle()
-    {         
-        while (!IsPlayerSeen(10f))  // Checa se viu o jogador a cada 0.1 segundo
-        {
-            yield return new WaitForSeconds(.1f);
-        }
-        UpdateState(EState.Chasing);
+    {
+        if (IsPlayerSeen(10f)) { UpdateState(EState.Chasing); }
+        else if (IsHealthLow()) { UpdateState(EState.RunningAway); }
+
+        yield return new WaitForSeconds(.1f);
+
+        UpdateState(EState.Idle);
     }
 
     private IEnumerator OnPatrolling()
@@ -91,6 +91,11 @@ public class AIController : MonoBehaviour
                     if (IsPlayerSeen(10f))      // Checa se viu o jogador a cada 0.1 segundo
                     {
                         UpdateState(EState.Chasing);    // Passa para estado de perseguindo
+                        break;
+                    }
+                    else if (IsHealthLow())
+                    {
+                        UpdateState(EState.RunningAway);
                         break;
                     }
                     yield return new WaitForSeconds(.1f);
@@ -141,14 +146,16 @@ public class AIController : MonoBehaviour
         UpdateState(EState.Chasing);
     }
 
-    private void OnRunningAway()
+    private IEnumerator OnRunningAway()
     {
-        // IMPLEMENTE AQUI O METODO DE FUGIR
-    }
+        // Escolhe uma base pra ir
+        int randPoint = Random.Range(0, basePoints.Length);
+        agent.SetDestination(basePoints[randPoint].position);
 
-    private void OnDead()
-    {
-        // IMPLEMENTE AQUI O METODO DE MORRER
+        // Fica no loop enquanto nao chega no destino ou a vida ainda esta baixa
+        while (!InDestination() || IsHealthLow()) { yield return new WaitForSeconds(.5f); }
+
+        UpdateState(EState.Chasing);
     }
 
     private bool InDestination()
@@ -176,5 +183,10 @@ public class AIController : MonoBehaviour
             }
         }
         return false;
+    }
+
+    private bool IsHealthLow()
+    {
+        return pawn.currentHealth < 30f;
     }
 }
