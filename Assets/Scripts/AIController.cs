@@ -1,7 +1,6 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
-using static UnityEngine.GraphicsBuffer;
 
 
 public class AIController : MonoBehaviour
@@ -15,30 +14,33 @@ public class AIController : MonoBehaviour
         RunningAway,
     }
 
+    [SerializeField] private EState currentState;
+    [SerializeField] private float chaseDetectionRange = 10f;
+    [SerializeField] private float shootDetectionRange = 5f;
+    [SerializeField] private float patrollingDelay = 2f;
+    [SerializeField] private float shootingDelay = 1f;
     [SerializeField] private Transform[] waypoints;
     [SerializeField] private Transform[] basePoints;
 
     private NavMeshAgent agent;
     private Transform player = null;
     private PawnBehavior pawn;
-    private EState currentState;
 
     private void Start()
     {  
-        agent = this.GetComponent<NavMeshAgent>();      // Salva a variavel nav mesh agent
-
-        player = GameObject.FindGameObjectWithTag("Player").transform;      // Salva o transform do jogador
-
+        // Definicoes iniciais
+        agent = this.GetComponent<NavMeshAgent>();
+        player = GameObject.FindGameObjectWithTag("Player").transform;
         pawn = this.GetComponent<PawnBehavior>();
     
-        UpdateState(EState.Patrolling);     // Comeca como patrulhando
+        UpdateState(EState.Patrolling);
     }
 
-    private void UpdateState(EState state)      // Metodo que altera o estado
+    private void UpdateState(EState state)
     {
-        currentState = state;   // Atualiza o estado atual
+        currentState = state;
 
-        switch(currentState)   // Implementa metodos dependendo do estado atual
+        switch(currentState)
         {
             case EState.Idle:
                 Debug.Log("Idle");
@@ -67,46 +69,42 @@ public class AIController : MonoBehaviour
 
     private IEnumerator OnIdle()
     {
-        if (IsPlayerSeen(10f)) { UpdateState(EState.Chasing); }
-        else if (IsHealthLow()) { UpdateState(EState.RunningAway); }
+        // Fica no estado de alerta enquanto estiver em idle
+        while (currentState == EState.Idle)
+        {
+            if (IsHealthLow()) { UpdateState(EState.RunningAway); }
+            else if (IsPlayerSeen(chaseDetectionRange)) { UpdateState(EState.Chasing); }
 
-        yield return new WaitForSeconds(.1f);
-
-        UpdateState(EState.Idle);
+            yield return new WaitForSeconds(.1f);
+        }
     }
 
     private IEnumerator OnPatrolling()
     {
-        if (waypoints != null)      // Checa se tem ponto para ir
+        // Patrulha se tiver pontos de destino
+        if (waypoints != null)
         {
-            while (currentState == EState.Patrolling)   // Enquanto estiver patrulhando...
+            // Escolhe um ponto de destino pra ir
+            int randPoint = Random.Range(0, waypoints.Length);
+            agent.SetDestination(waypoints[randPoint].position);
+
+            // Fica no loop enquanto nao chega no destino e permanece no estado de patrulha
+            while (!InDestination() && currentState == EState.Patrolling)
             {
-                yield return new WaitForSeconds(2f);    // Delay de 2 segundos antes
+                if (IsHealthLow()) { UpdateState(EState.RunningAway); }
+                else if (IsPlayerSeen(chaseDetectionRange)) { UpdateState(EState.Chasing); }
 
-                int randPoint = Random.Range(0, waypoints.Length);      // Escolhe destino randomico e defini como destino
-                agent.SetDestination(waypoints[randPoint].position);
+                yield return new WaitForSeconds(.1f);
+            }
 
-                while (!InDestination())    // Enquanto nao chega no destino...
-                {
-                    if (IsPlayerSeen(10f))      // Checa se viu o jogador a cada 0.1 segundo
-                    {
-                        UpdateState(EState.Chasing);    // Passa para estado de perseguindo
-                        break;
-                    }
-                    else if (IsHealthLow())
-                    {
-                        UpdateState(EState.RunningAway);
-                        break;
-                    }
-                    yield return new WaitForSeconds(.1f);
-                }
-
-                if (currentState != EState.Patrolling) { break; }   // Quebra o loop se ja nao mais tiver patrulhando
-
-                Debug.Log("Chegou ao destino");
-            }          
+            // Reinicia patrulha se ainda estiver no estado de patrulhando
+            if (currentState == EState.Patrolling) 
+            {
+                yield return new WaitForSeconds(patrollingDelay);
+                UpdateState(EState.Patrolling); 
+            }
         }
-        else    // Se nao tiver pontos para ir, entra no estado de idle
+        else
         {
             Debug.Log("Nao ha waypoints!");
             UpdateState(EState.Idle);
@@ -115,21 +113,17 @@ public class AIController : MonoBehaviour
 
     private IEnumerator OnChasing()
     {
-        agent.SetDestination(player.position);      // Defini posicao do jogador como destino
+        agent.SetDestination(player.position);
 
-        while (!InDestination() && currentState == EState.Chasing)    // Fica definindo a posicao do jogador como destino a cada 0.1 segundo
+        // Atualiza o destino enquanto estiver perseguindo
+        while (currentState == EState.Chasing)
         {
+            if (IsHealthLow()) { UpdateState(EState.RunningAway); }
+            else if (IsPlayerSeen(shootDetectionRange)) { UpdateState(EState.Shooting); }
+
+            yield return new WaitForSeconds(.2f);
+
             agent.SetDestination(player.position);
-
-            if (IsPlayerSeen(5f))    // Checa se jogador esta proximo a cada 0.1 segundo
-            {
-                UpdateState(EState.Shooting);       // Passa para estado de atirando
-                break;
-            }
-
-            if (currentState != EState.Chasing) { break; }      // Quebra o loop se ja nao mais tiver perseguindo
-              
-            yield return new WaitForSeconds(.1f);
         } 
     }
 
@@ -141,19 +135,22 @@ public class AIController : MonoBehaviour
         GetComponent<PawnBehavior>().Shoot();
         Debug.Log("Atirou");
 
-        // Troca para cacando depois de 1 segundo
-        yield return new WaitForSeconds(1f);
+        // Volta para estado de cacando
+        yield return new WaitForSeconds(shootingDelay);
         UpdateState(EState.Chasing);
     }
 
     private IEnumerator OnRunningAway()
     {
-        // Escolhe uma base pra ir
+        // Escolhe um ponto da base pra ir
         int randPoint = Random.Range(0, basePoints.Length);
-        agent.SetDestination(basePoints[randPoint].position);
 
         // Fica no loop enquanto nao chega no destino ou a vida ainda esta baixa
-        while (!InDestination() || IsHealthLow()) { yield return new WaitForSeconds(.5f); }
+        while (!InDestination() || IsHealthLow()) 
+        {
+            agent.SetDestination(basePoints[randPoint].position);
+            yield return new WaitForSeconds(.5f); 
+        }
 
         UpdateState(EState.Chasing);
     }
@@ -166,12 +163,12 @@ public class AIController : MonoBehaviour
 
     private bool IsPlayerSeen(float detectionRange)
     {
-        if (Vector3.Distance(player.position, this.transform.position) < detectionRange)    // Checa se jogador esta dentro da area de deteccao
+        // Procura ver jogador se este esta dentro da area de deteccao
+        if (Vector3.Distance(player.position, this.transform.position) < detectionRange)
         {
             RaycastHit hit;
             Vector3 playerDirection = (player.position - this.transform.position).normalized;
 
-            // Cria uma linha da ia para o jogador, se bater em algo antes, nao viu o jogador
             if (Physics.Raycast(this.transform.position, playerDirection, out hit, detectionRange))
             {            
                 if (hit.transform == player) 
@@ -179,9 +176,10 @@ public class AIController : MonoBehaviour
                     Debug.Log("Viu jogador");
                     return true; 
                 }
-                else { Debug.Log(hit.collider.gameObject.name); }
+                //else { Debug.Log(hit.collider.gameObject.name); }
             }
         }
+
         return false;
     }
 

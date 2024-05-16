@@ -12,6 +12,7 @@ public class PawnBehavior : MonoBehaviour, IDamageable
 
     public void Shoot()
     {
+        // Atira se tiver municao
         if (currentAmmo > 0)
         {
             Instantiate(bulletPrefab, spawnBullet.position, spawnBullet.rotation);

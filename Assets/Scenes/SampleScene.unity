@@ -1910,6 +1910,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4645c6406d5f9485e82ed760afc8791d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  currentState: 0
+  chaseDetectionRange: 15
+  shootDetectionRange: 10
+  patrollingDelay: 2
+  shootingDelay: 1
   waypoints:
   - {fileID: 1905686667}
   - {fileID: 1998345970}
